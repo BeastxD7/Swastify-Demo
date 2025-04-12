@@ -18,10 +18,11 @@ import { supabase } from "@/lib/supabase"
 import { useTheme } from "next-themes"
 import { Progress } from "@/components/ui/progress"
 
-// Update the form schema to simplify the validation and avoid the error
+// Update the form schema to include email
 const formSchema = z.object({
   // Section 1
   name: z.string().optional(),
+  email: z.string().email({ message: "Please enter a valid email" }).optional().or(z.literal("")),
   occupation: z.string().optional(),
   ageGroup: z.string().optional(),
   hasRegularProvider: z.string().optional(),
@@ -64,10 +65,12 @@ export default function SurveyPage() {
   const totalSteps = 3
   const progress = (currentStep / totalSteps) * 100
 
+  // Update the form defaultValues to include email
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      email: "",
       occupation: "",
       ageGroup: "",
       hasRegularProvider: "",
@@ -124,7 +127,7 @@ export default function SurveyPage() {
     )
   }
 
-  // Update the onSubmit function to properly map the form fields to database columns
+  // Add the email field to the database mapping in onSubmit function
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true)
 
@@ -132,6 +135,7 @@ export default function SurveyPage() {
       // Map form values to database column names (camelCase to snake_case)
       const dbValues = {
         name: values.name || null,
+        email: values.email || null,
         occupation: values.occupation || null,
         age_group: values.ageGroup,
         has_regular_provider: values.hasRegularProvider,
@@ -374,6 +378,29 @@ export default function SurveyPage() {
 
                           <FormField
                             control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className={isDark ? "text-white" : "text-zinc-900"}>
+                                  Your Email (Optional)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Your email"
+                                    type="email"
+                                    {...field}
+                                    className={`border ${isDark ? "bg-zinc-800/50 border-zinc-700" : "bg-white border-gray-200"}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
                             name="occupation"
                             render={({ field }) => (
                               <FormItem>
@@ -417,21 +444,23 @@ export default function SurveyPage() {
                                     "65+",
                                     "Prefer not to say",
                                   ].map((age) => (
-                                    <FormItem
+                                    <label
                                       key={age}
                                       className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                         field.value === age ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                      } p-2 transition-colors duration-200`}
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      <FormControl>
-                                        <RadioGroupItem value={age} />
-                                      </FormControl>
-                                      <FormLabel
-                                        className={`font-normal cursor-pointer text-sm ${isDark ? "text-white" : "text-zinc-900"}`}
-                                      >
-                                        {age}
-                                      </FormLabel>
-                                    </FormItem>
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                        <FormControl>
+                                          <RadioGroupItem value={age} />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer text-sm ${isDark ? "text-white" : "text-zinc-900"} w-full m-0`}
+                                        >
+                                          {age}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
                                   ))}
                                 </RadioGroup>
                               </FormControl>
@@ -452,24 +481,26 @@ export default function SurveyPage() {
                                 <RadioGroup
                                   onValueChange={field.onChange}
                                   defaultValue={Array.isArray(field.value) ? field.value[0] : field.value}
-                                  className={`flex gap-4 ${fieldHasError("hasRegularProvider") ? "border border-red-500 dark:border-red-400 rounded-md p-2" : ""}`}
+                                  className={`grid grid-cols-2 gap-2 ${fieldHasError("hasRegularProvider") ? "border border-red-500 dark:border-red-400 rounded-md p-2" : ""}`}
                                 >
                                   {["Yes", "No"].map((option) => (
-                                    <FormItem
+                                    <label
                                       key={option}
                                       className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                         field.value === option ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                      } p-2 transition-colors duration-200`}
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      <FormControl>
-                                        <RadioGroupItem value={option} />
-                                      </FormControl>
-                                      <FormLabel
-                                        className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"}`}
-                                      >
-                                        {option}
-                                      </FormLabel>
-                                    </FormItem>
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                        <FormControl>
+                                          <RadioGroupItem value={option} />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"} m-0`}
+                                        >
+                                          {option}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
                                   ))}
                                 </RadioGroup>
                               </FormControl>
@@ -500,31 +531,36 @@ export default function SurveyPage() {
                                   "Phone request",
                                   "I don't access them",
                                   "Other",
-                                ].map((method) => (
-                                  <FormItem
-                                    key={method}
-                                    className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
-                                      field.value?.includes(method) ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                    } p-2 transition-colors duration-200`}
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(method)}
-                                        onCheckedChange={(checked) => {
-                                          const updatedValue = checked
-                                            ? [...(field.value || []), method]
-                                            : (field.value || []).filter((value) => value !== method)
-                                          field.onChange(updatedValue)
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel
-                                      className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"}`}
+                                ].map((method) => {
+                                  const isSelected = field.value?.includes(method) || false
+                                  return (
+                                    <label
+                                      key={method}
+                                      className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
+                                        isSelected ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      {method}
-                                    </FormLabel>
-                                  </FormItem>
-                                ))}
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={isSelected}
+                                            onCheckedChange={(checked) => {
+                                              const updatedValue = checked
+                                                ? [...(field.value || []), method]
+                                                : (field.value || []).filter((value) => value !== method)
+                                              field.onChange(updatedValue)
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"} w-full m-0`}
+                                        >
+                                          {method}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
+                                  )
+                                })}
                               </div>
                               <FormMessage className="text-red-500 dark:text-red-400 text-sm mt-1" />
                             </FormItem>
@@ -566,24 +602,26 @@ export default function SurveyPage() {
                                 <RadioGroup
                                   onValueChange={field.onChange}
                                   defaultValue={Array.isArray(field.value) ? field.value[0] : field.value}
-                                  className={`flex gap-4 ${fieldHasError("accessDifficulties") ? "border border-red-500 dark:border-red-400 rounded-md p-2" : ""}`}
+                                  className={`grid grid-cols-2 gap-2 ${fieldHasError("accessDifficulties") ? "border border-red-500 dark:border-red-400 rounded-md p-2" : ""}`}
                                 >
                                   {["Yes", "No"].map((option) => (
-                                    <FormItem
+                                    <label
                                       key={option}
                                       className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                         field.value === option ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                      } p-2 transition-colors duration-200`}
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      <FormControl>
-                                        <RadioGroupItem value={option} />
-                                      </FormControl>
-                                      <FormLabel
-                                        className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"}`}
-                                      >
-                                        {option}
-                                      </FormLabel>
-                                    </FormItem>
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                        <FormControl>
+                                          <RadioGroupItem value={option} />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"} m-0`}
+                                        >
+                                          {option}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
                                   ))}
                                 </RadioGroup>
                               </FormControl>
@@ -639,7 +677,7 @@ export default function SurveyPage() {
                                       <RadioGroup
                                         onValueChange={field.onChange}
                                         defaultValue={Array.isArray(field.value) ? field.value[0] : field.value}
-                                        className={`flex flex-col space-y-1 ${
+                                        className={`grid grid-cols-1 gap-2 ${
                                           fieldHasError(item.name)
                                             ? "border border-red-500 dark:border-red-400 rounded-md p-2"
                                             : ""
@@ -647,7 +685,7 @@ export default function SurveyPage() {
                                       >
                                         {["Strongly Agree", "Agree", "Neutral", "Disagree", "Strongly Disagree"].map(
                                           (option) => (
-                                            <FormItem
+                                            <label
                                               key={option}
                                               className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                                 field.value === option
@@ -657,17 +695,19 @@ export default function SurveyPage() {
                                                   : isDark
                                                     ? "bg-zinc-800/50"
                                                     : "bg-white"
-                                              } p-2 transition-colors duration-200`}
+                                              } p-2 transition-colors duration-200 hover:bg-gray-200 dark:hover:bg-zinc-700`}
                                             >
-                                              <FormControl>
-                                                <RadioGroupItem value={option} />
-                                              </FormControl>
-                                              <FormLabel
-                                                className={`font-normal cursor-pointer text-sm w-full m-0 ${isDark ? "text-white" : "text-zinc-900"}`}
-                                              >
-                                                {option}
-                                              </FormLabel>
-                                            </FormItem>
+                                              <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                                <FormControl>
+                                                  <RadioGroupItem value={option} />
+                                                </FormControl>
+                                                <FormLabel
+                                                  className={`font-normal cursor-pointer text-sm w-full m-0 ${isDark ? "text-white" : "text-zinc-900"}`}
+                                                >
+                                                  {option}
+                                                </FormLabel>
+                                              </FormItem>
+                                            </label>
                                           ),
                                         )}
                                       </RadioGroup>
@@ -706,21 +746,23 @@ export default function SurveyPage() {
                                     "More than a week",
                                     "I've never received them",
                                   ].map((option) => (
-                                    <FormItem
+                                    <label
                                       key={option}
                                       className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                         field.value === option ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                      } p-2 transition-colors duration-200`}
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      <FormControl>
-                                        <RadioGroupItem value={option} />
-                                      </FormControl>
-                                      <FormLabel
-                                        className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"}`}
-                                      >
-                                        {option}
-                                      </FormLabel>
-                                    </FormItem>
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                        <FormControl>
+                                          <RadioGroupItem value={option} />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"} w-full m-0`}
+                                        >
+                                          {option}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
                                   ))}
                                 </RadioGroup>
                               </FormControl>
@@ -746,28 +788,30 @@ export default function SurveyPage() {
                                 <RadioGroup
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
-                                  className={`flex flex-wrap gap-2 ${
+                                  className={`grid grid-cols-2 gap-2 ${
                                     fieldHasError("explainedAccess")
                                       ? "border border-red-500 dark:border-red-400 rounded-md p-2"
                                       : ""
                                   }`}
                                 >
                                   {["Yes", "No", "I don't remember"].map((option) => (
-                                    <FormItem
+                                    <label
                                       key={option}
                                       className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                         field.value === option ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                      } p-2 transition-colors duration-200`}
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      <FormControl>
-                                        <RadioGroupItem value={option} />
-                                      </FormControl>
-                                      <FormLabel
-                                        className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"}`}
-                                      >
-                                        {option}
-                                      </FormLabel>
-                                    </FormItem>
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0">
+                                        <FormControl>
+                                          <RadioGroupItem value={option} />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"} m-0`}
+                                        >
+                                          {option}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
                                   ))}
                                 </RadioGroup>
                               </FormControl>
@@ -801,21 +845,23 @@ export default function SurveyPage() {
                                     "I didn't contact anyone",
                                     "Other",
                                   ].map((option) => (
-                                    <FormItem
+                                    <label
                                       key={option}
                                       className={`flex items-center space-x-3 space-y-0 rounded-md cursor-pointer ${
                                         field.value === option ? (isDark ? "bg-zinc-800" : "bg-gray-100") : ""
-                                      } p-2 transition-colors duration-200`}
+                                      } p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-zinc-800`}
                                     >
-                                      <FormControl>
-                                        <RadioGroupItem value={option} />
-                                      </FormControl>
-                                      <FormLabel
-                                        className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"}`}
-                                      >
-                                        {option}
-                                      </FormLabel>
-                                    </FormItem>
+                                      <FormItem className="flex items-center space-x-3 space-y-0 m-0 w-full">
+                                        <FormControl>
+                                          <RadioGroupItem value={option} />
+                                        </FormControl>
+                                        <FormLabel
+                                          className={`font-normal cursor-pointer ${isDark ? "text-white" : "text-zinc-900"} w-full m-0`}
+                                        >
+                                          {option}
+                                        </FormLabel>
+                                      </FormItem>
+                                    </label>
                                   ))}
                                 </RadioGroup>
                               </FormControl>

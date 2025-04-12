@@ -1,172 +1,122 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import {
-  Eye,
-  Search,
-  CheckCircle,
-  XCircle,
-  LogOut,
-  AlertCircle,
-  AlertTriangle,
-} from "lucide-react";
-import { format } from "date-fns";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import Link from "next/link";
-import type {
-  FeedbackSubmission,
-  ContactSubmission,
-  SurveyResponse,
-} from "@/lib/supabase-schema";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
+import { Eye, Search, CheckCircle, XCircle, LogOut, AlertCircle, AlertTriangle } from "lucide-react"
+import { format } from "date-fns"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
+import Link from "next/link"
+import type { FeedbackSubmission, ContactSubmission, SurveyResponse } from "@/lib/supabase-schema"
 
 export default function AdminPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [feedbackData, setFeedbackData] = useState<FeedbackSubmission[]>([]);
-  const [contactData, setContactData] = useState<ContactSubmission[]>([]);
-  const [surveyData, setSurveyData] = useState<SurveyResponse[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTab, setSelectedTab] = useState("feedback");
-  const [selectedItem, setSelectedItem] = useState<
-    FeedbackSubmission | ContactSubmission | SurveyResponse | null
-  >(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [blockedIPs, setBlockedIPs] = useState<
-    { ip: string; blockedUntil: Date }[]
-  >([]);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true)
+  const [feedbackData, setFeedbackData] = useState<FeedbackSubmission[]>([])
+  const [contactData, setContactData] = useState<ContactSubmission[]>([])
+  const [surveyData, setSurveyData] = useState<SurveyResponse[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedTab, setSelectedTab] = useState("feedback")
+  const [selectedItem, setSelectedItem] = useState<FeedbackSubmission | ContactSubmission | SurveyResponse | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [blockedIPs, setBlockedIPs] = useState<{ ip: string; blockedUntil: Date }[]>([])
+  const router = useRouter()
 
   useEffect(() => {
-    fetchData();
-    fetchBlockedIPs();
-  }, []);
+    fetchData()
+    fetchBlockedIPs()
+  }, [])
 
   const handleLogout = async () => {
     try {
       await fetch("/api/auth", {
         method: "DELETE",
-      });
+      })
 
-      toast.success("Logged out successfully");
-      router.push("/admin/login");
-      router.refresh(); // Refresh to update the UI based on the cookie change
+      toast.success("Logged out successfully")
+      router.push("/admin/login")
+      router.refresh() // Refresh to update the UI based on the cookie change
     } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Logout failed");
+      console.error("Logout error:", error)
+      toast.error("Logout failed")
     }
-  };
+  }
 
   // Enhanced fetchData function with better error handling and debugging
   const fetchData = async () => {
-    setIsLoading(true);
-    setFetchError(null);
+    setIsLoading(true)
+    setFetchError(null)
 
     try {
       // Fetch feedback data
-      console.log("Fetching feedback data...");
-      const feedbackResponse = await supabase.from("feedback").select("*");
+      console.log("Fetching feedback data...")
+      const feedbackResponse = await supabase.from("feedback").select("*")
 
       if (feedbackResponse.error) {
-        console.error("Feedback fetch error:", feedbackResponse.error);
-        throw new Error(
-          `Feedback fetch error: ${feedbackResponse.error.message}`
-        );
+        console.error("Feedback fetch error:", feedbackResponse.error)
+        throw new Error(`Feedback fetch error: ${feedbackResponse.error.message}`)
       }
 
-      console.log(
-        `Feedback data received: ${feedbackResponse.data?.length} records`
-      );
-      setFeedbackData(feedbackResponse.data || []);
+      console.log(`Feedback data received: ${feedbackResponse.data?.length} records`)
+      setFeedbackData(feedbackResponse.data || [])
 
       // Fetch contact data
-      console.log("Fetching contact data...");
-      const contactResponse = await supabase
-        .from("contact_submissions")
-        .select("*");
+      console.log("Fetching contact data...")
+      const contactResponse = await supabase.from("contact_submissions").select("*")
 
       if (contactResponse.error) {
-        console.error("Contact fetch error:", contactResponse.error);
-        throw new Error(
-          `Contact fetch error: ${contactResponse.error.message}`
-        );
+        console.error("Contact fetch error:", contactResponse.error)
+        throw new Error(`Contact fetch error: ${contactResponse.error.message}`)
       }
 
-      console.log(
-        `Contact data received: ${contactResponse.data?.length} records`
-      );
-      setContactData(contactResponse.data || []);
+      console.log(`Contact data received: ${contactResponse.data?.length} records`)
+      setContactData(contactResponse.data || [])
 
       // Fetch survey data
-      console.log("Fetching survey data...");
-      const surveyResponse = await supabase
-        .from("survey_responses")
-        .select("*");
+      console.log("Fetching survey data...")
+      const surveyResponse = await supabase.from("survey_responses").select("*")
 
       if (surveyResponse.error) {
-        console.error("Survey fetch error:", surveyResponse.error);
-        console.error(
-          "Survey error details:",
-          JSON.stringify(surveyResponse.error, null, 2)
-        );
-        throw new Error(`Survey fetch error: ${surveyResponse.error.message}`);
+        console.error("Survey fetch error:", surveyResponse.error)
+        console.error("Survey error details:", JSON.stringify(surveyResponse.error, null, 2))
+        throw new Error(`Survey fetch error: ${surveyResponse.error.message}`)
       }
 
-      console.log(
-        `Survey data received: ${surveyResponse.data?.length} records`
-      );
+      console.log(`Survey data received: ${surveyResponse.data?.length} records`)
       if (surveyResponse.data && surveyResponse.data.length > 0) {
-        console.log("First survey record:", surveyResponse.data[0]);
+        console.log("First survey record:", surveyResponse.data[0])
       }
 
-      setSurveyData(surveyResponse.data || []);
+      setSurveyData(surveyResponse.data || [])
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setFetchError(
-        error instanceof Error
-          ? error.message
-          : String(error) || "Failed to fetch data"
-      );
-      toast.error("Failed to fetch data");
+      console.error("Error fetching data:", error)
+      setFetchError(error instanceof Error ? error.message : String(error) || "Failed to fetch data")
+      toast.error("Failed to fetch data")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const fetchBlockedIPs = async () => {
     try {
-      const response = await fetch("/api/auth/blocked-ips");
+      const response = await fetch("/api/auth/blocked-ips")
       if (!response.ok) {
-        throw new Error("Failed to fetch blocked IPs");
+        throw new Error("Failed to fetch blocked IPs")
       }
-      const data = await response.json();
-      setBlockedIPs(data.blockedIPs);
+      const data = await response.json()
+      setBlockedIPs(data.blockedIPs)
     } catch (error) {
-      console.error("Error fetching blocked IPs:", error);
+      console.error("Error fetching blocked IPs:", error)
     }
-  };
+  }
 
   const markAsResponded = async (id: number) => {
     try {
@@ -176,9 +126,9 @@ export default function AdminPage() {
           responded: true,
           responded_at: new Date().toISOString(),
         })
-        .eq("id", id);
+        .eq("id", id)
 
-      if (error) throw error;
+      if (error) throw error
 
       // Update local state
       setContactData((prevData) =>
@@ -189,50 +139,43 @@ export default function AdminPage() {
                 responded: true,
                 responded_at: new Date().toISOString(),
               }
-            : item
-        )
-      );
+            : item,
+        ),
+      )
 
-      toast.success("Marked as responded");
+      toast.success("Marked as responded")
     } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Failed to update status");
+      console.error("Error updating status:", error)
+      toast.error("Failed to update status")
     }
-  };
+  }
 
   const filteredFeedback = feedbackData.filter(
     (item) =>
-      (item.name &&
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.email &&
-        item.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      item.experience.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.email && item.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      item.experience.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   const filteredContacts = contactData.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.message.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      item.message.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   const filteredSurveys = surveyData.filter(
     (item) =>
-      (item.name &&
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.occupation &&
-        item.occupation.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.make_easier &&
-        item.make_easier.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+      (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.occupation && item.occupation.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.make_easier && item.make_easier.toLowerCase().includes(searchQuery.toLowerCase())),
+  )
 
-  const viewDetails = (
-    item: FeedbackSubmission | ContactSubmission | SurveyResponse
-  ) => {
-    setSelectedItem(item);
-    setIsViewModalOpen(true);
-  };
+  const viewDetails = (item: FeedbackSubmission | ContactSubmission | SurveyResponse) => {
+    setSelectedItem(item)
+    setIsViewModalOpen(true)
+  }
 
   if (isLoading) {
     return (
@@ -242,7 +185,7 @@ export default function AdminPage() {
           <p className="mt-4 text-zinc-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -251,9 +194,7 @@ export default function AdminPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
-            Admin Dashboard
-          </h1>
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Admin Dashboard</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
@@ -269,8 +210,8 @@ export default function AdminPage() {
               <p className="font-medium">Error fetching data:</p>
               <p className="text-sm">{fetchError}</p>
               <p className="text-sm mt-2">
-                This might be due to Supabase Row Level Security (RLS) policies.
-                Make sure you have the correct permissions set up.
+                This might be due to Supabase Row Level Security (RLS) policies. Make sure you have the correct
+                permissions set up.
               </p>
               <div className="mt-3">
                 <Link href="/admin/debug">
@@ -297,24 +238,15 @@ export default function AdminPage() {
         </div>
 
         <div className="mb-6 p-4 border border-zinc-300 bg-zinc-50 dark:bg-zinc-800/50 dark:border-zinc-700 rounded-md">
-          <h3 className="font-medium text-zinc-800 dark:text-zinc-200 mb-2">
-            Supabase Connection Status
-          </h3>
+          <h3 className="font-medium text-zinc-800 dark:text-zinc-200 mb-2">Supabase Connection Status</h3>
           <p className="text-sm text-zinc-700 dark:text-zinc-300">
             URL: {process.env.NEXT_PUBLIC_SUPABASE_URL || "Not set"}
           </p>
           <p className="text-sm text-zinc-700 dark:text-zinc-300">
-            API Key:{" "}
-            {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-              ? "Set (hidden)"
-              : "Not set"}
+            API Key: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Set (hidden)" : "Not set"}
           </p>
           <div className="mt-2 flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={fetchData}
-              className="text-xs">
+            <Button size="sm" variant="outline" onClick={fetchData} className="text-xs">
               Test Connection
             </Button>
             <Link href="/admin/debug">
@@ -330,34 +262,26 @@ export default function AdminPage() {
             <div className="flex items-start">
               <AlertTriangle className="h-5 w-5 mr-2 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-medium text-amber-800 dark:text-amber-300">
-                  Blocked IP Addresses
-                </h3>
+                <h3 className="font-medium text-amber-800 dark:text-amber-300">Blocked IP Addresses</h3>
                 <p className="text-sm text-amber-700 dark:text-amber-400 mb-2">
-                  The following IP addresses are currently blocked due to too
-                  many failed login attempts:
+                  The following IP addresses are currently blocked due to too many failed login attempts:
                 </p>
                 <ul className="text-sm space-y-1 text-amber-700 dark:text-amber-400">
                   {blockedIPs.map((item, index) => (
                     <li key={index}>
-                      IP: {item.ip} - Blocked until:{" "}
-                      {new Date(item.blockedUntil).toLocaleString()}
+                      IP: {item.ip} - Blocked until: {new Date(item.blockedUntil).toLocaleString()}
                     </li>
                   ))}
                 </ul>
                 <p className="text-xs mt-2 text-amber-600 dark:text-amber-500">
-                  Note: This list will reset if the server restarts. For
-                  persistent blocking, consider using a database.
+                  Note: This list will reset if the server restarts. For persistent blocking, consider using a database.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        <Tabs
-          defaultValue="feedback"
-          value={selectedTab}
-          onValueChange={setSelectedTab}>
+        <Tabs defaultValue="feedback" value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="feedback">
               Feedback
@@ -383,9 +307,7 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Feedback Submissions</CardTitle>
-                <CardDescription>
-                  View all feedback submitted through the platform
-                </CardDescription>
+                <CardDescription>View all feedback submitted through the platform</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -405,12 +327,7 @@ export default function AdminPage() {
                         filteredFeedback.map((item) => (
                           <TableRow key={item.id}>
                             <TableCell className="font-medium">
-                              {item.created_at
-                                ? format(
-                                    new Date(item.created_at),
-                                    "MMM d, yyyy"
-                                  )
-                                : "N/A"}
+                              {item.created_at ? format(new Date(item.created_at), "MMM d, yyyy") : "N/A"}
                             </TableCell>
                             <TableCell>{item.name || "Anonymous"}</TableCell>
                             <TableCell>{item.email || "N/A"}</TableCell>
@@ -420,10 +337,7 @@ export default function AdminPage() {
                               {item.experience.length > 50 ? "..." : ""}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => viewDetails(item)}>
+                              <Button variant="ghost" size="icon" onClick={() => viewDetails(item)}>
                                 <Eye className="h-4 w-4" />
                                 <span className="sr-only">View details</span>
                               </Button>
@@ -432,9 +346,7 @@ export default function AdminPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell
-                            colSpan={6}
-                            className="text-center py-4 text-muted-foreground">
+                          <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                             No feedback found
                           </TableCell>
                         </TableRow>
@@ -450,9 +362,7 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Contact Submissions</CardTitle>
-                <CardDescription>
-                  View and manage contact form submissions
-                </CardDescription>
+                <CardDescription>View and manage contact form submissions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -472,18 +382,11 @@ export default function AdminPage() {
                         filteredContacts.map((item) => (
                           <TableRow key={item.id}>
                             <TableCell className="font-medium">
-                              {item.created_at
-                                ? format(
-                                    new Date(item.created_at),
-                                    "MMM d, yyyy"
-                                  )
-                                : "N/A"}
+                              {item.created_at ? format(new Date(item.created_at), "MMM d, yyyy") : "N/A"}
                             </TableCell>
                             <TableCell>{item.name}</TableCell>
                             <TableCell>{item.email}</TableCell>
-                            <TableCell className="max-w-xs truncate">
-                              {item.subject}
-                            </TableCell>
+                            <TableCell className="max-w-xs truncate">{item.subject}</TableCell>
                             <TableCell>
                               {item.responded ? (
                                 <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
@@ -492,29 +395,22 @@ export default function AdminPage() {
                               ) : (
                                 <Badge
                                   variant="outline"
-                                  className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                                  className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100"
+                                >
                                   Pending
                                 </Badge>
                               )}
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => viewDetails(item)}>
+                                <Button variant="ghost" size="icon" onClick={() => viewDetails(item)}>
                                   <Eye className="h-4 w-4" />
                                   <span className="sr-only">View details</span>
                                 </Button>
                                 {!item.responded && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => markAsResponded(item.id!)}>
+                                  <Button variant="ghost" size="icon" onClick={() => markAsResponded(item.id!)}>
                                     <CheckCircle className="h-4 w-4" />
-                                    <span className="sr-only">
-                                      Mark as responded
-                                    </span>
+                                    <span className="sr-only">Mark as responded</span>
                                   </Button>
                                 )}
                               </div>
@@ -523,9 +419,7 @@ export default function AdminPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell
-                            colSpan={6}
-                            className="text-center py-4 text-muted-foreground">
+                          <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                             No contact submissions found
                           </TableCell>
                         </TableRow>
@@ -541,9 +435,7 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Survey Responses</CardTitle>
-                <CardDescription>
-                  View all healthcare records survey responses
-                </CardDescription>
+                <CardDescription>View all healthcare records survey responses</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -563,26 +455,16 @@ export default function AdminPage() {
                         filteredSurveys.map((item) => (
                           <TableRow key={item.id}>
                             <TableCell className="font-medium">
-                              {item.created_at
-                                ? format(
-                                    new Date(item.created_at),
-                                    "MMM d, yyyy"
-                                  )
-                                : "N/A"}
+                              {item.created_at ? format(new Date(item.created_at), "MMM d, yyyy") : "N/A"}
                             </TableCell>
                             <TableCell>{item.name || "Anonymous"}</TableCell>
                             <TableCell>{item.age_group}</TableCell>
                             <TableCell>{item.has_regular_provider}</TableCell>
                             <TableCell className="max-w-xs truncate">
-                              {Array.isArray(item.access_methods)
-                                ? item.access_methods.join(", ")
-                                : "N/A"}
+                              {Array.isArray(item.access_methods) ? item.access_methods.join(", ") : "N/A"}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => viewDetails(item)}>
+                              <Button variant="ghost" size="icon" onClick={() => viewDetails(item)}>
                                 <Eye className="h-4 w-4" />
                                 <span className="sr-only">View details</span>
                               </Button>
@@ -591,9 +473,7 @@ export default function AdminPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell
-                            colSpan={6}
-                            className="text-center py-4 text-muted-foreground">
+                          <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                             No survey responses found
                           </TableCell>
                         </TableRow>
@@ -617,17 +497,12 @@ export default function AdminPage() {
                     {selectedTab === "feedback"
                       ? "Feedback Details"
                       : selectedTab === "contact"
-                      ? "Contact Submission Details"
-                      : "Survey Response Details"}
+                        ? "Contact Submission Details"
+                        : "Survey Response Details"}
                   </h2>
                   <p className="text-sm text-zinc-600 dark:text-zinc-300">
                     {`Submitted on ${
-                      selectedItem.created_at
-                        ? format(
-                            new Date(selectedItem.created_at),
-                            "MMMM d, yyyy"
-                          )
-                        : "N/A"
+                      selectedItem.created_at ? format(new Date(selectedItem.created_at), "MMMM d, yyyy") : "N/A"
                     }`}
                   </p>
                 </div>
@@ -636,35 +511,25 @@ export default function AdminPage() {
                     // Feedback details
                     <>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Name
-                        </h3>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Name</h3>
                         <p className="text-zinc-900 dark:text-white">
-                          {(selectedItem as FeedbackSubmission).name ||
-                            "Anonymous"}
+                          {(selectedItem as FeedbackSubmission).name || "Anonymous"}
                         </p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Email
-                        </h3>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email</h3>
                         <p className="text-zinc-900 dark:text-white">
                           {(selectedItem as FeedbackSubmission).email || "N/A"}
                         </p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Occupation
-                        </h3>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Occupation</h3>
                         <p className="text-zinc-900 dark:text-white">
-                          {(selectedItem as FeedbackSubmission).occupation ||
-                            "N/A"}
+                          {(selectedItem as FeedbackSubmission).occupation || "N/A"}
                         </p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Experience
-                        </h3>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Experience</h3>
                         <p className="whitespace-pre-wrap text-zinc-900 dark:text-white">
                           {(selectedItem as FeedbackSubmission).experience}
                         </p>
@@ -674,57 +539,33 @@ export default function AdminPage() {
                     // Contact details
                     <>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Name
-                        </h3>
-                        <p className="text-zinc-900 dark:text-white">
-                          {(selectedItem as ContactSubmission).name}
-                        </p>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Name</h3>
+                        <p className="text-zinc-900 dark:text-white">{(selectedItem as ContactSubmission).name}</p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Email
-                        </h3>
-                        <p className="text-zinc-900 dark:text-white">
-                          {(selectedItem as ContactSubmission).email}
-                        </p>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email</h3>
+                        <p className="text-zinc-900 dark:text-white">{(selectedItem as ContactSubmission).email}</p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Subject
-                        </h3>
-                        <p className="text-zinc-900 dark:text-white">
-                          {(selectedItem as ContactSubmission).subject}
-                        </p>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Subject</h3>
+                        <p className="text-zinc-900 dark:text-white">{(selectedItem as ContactSubmission).subject}</p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Message
-                        </h3>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Message</h3>
                         <p className="whitespace-pre-wrap text-zinc-900 dark:text-white">
                           {(selectedItem as ContactSubmission).message}
                         </p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                          Status
-                        </h3>
+                        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Status</h3>
                         <div className="flex items-center text-zinc-900 dark:text-white">
                           {(selectedItem as ContactSubmission).responded ? (
                             <>
                               <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                               <span>
                                 Responded on{" "}
-                                {(selectedItem as ContactSubmission)
-                                  .responded_at
-                                  ? format(
-                                      new Date(
-                                        (
-                                          selectedItem as ContactSubmission
-                                        ).responded_at!
-                                      ),
-                                      "MMMM d, yyyy"
-                                    )
+                                {(selectedItem as ContactSubmission).responded_at
+                                  ? format(new Date((selectedItem as ContactSubmission).responded_at!), "MMMM d, yyyy")
                                   : "N/A"}
                               </span>
                             </>
@@ -742,41 +583,26 @@ export default function AdminPage() {
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                            Name
-                          </h3>
+                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Name</h3>
                           <p className="text-zinc-900 dark:text-white">
-                            {(selectedItem as SurveyResponse).name ||
-                              "Anonymous"}
+                            {(selectedItem as SurveyResponse).name || "Anonymous"}
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                            Occupation
-                          </h3>
+                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email</h3>
                           <p className="text-zinc-900 dark:text-white">
-                            {(selectedItem as SurveyResponse).occupation ||
-                              "N/A"}
+                            {(selectedItem as SurveyResponse).email || "N/A"}
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                            Age Group
-                          </h3>
+                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Occupation</h3>
                           <p className="text-zinc-900 dark:text-white">
-                            {(selectedItem as SurveyResponse).age_group}
+                            {(selectedItem as SurveyResponse).occupation || "N/A"}
                           </p>
                         </div>
                         <div>
-                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                            Has Regular Provider
-                          </h3>
-                          <p className="text-zinc-900 dark:text-white">
-                            {
-                              (selectedItem as SurveyResponse)
-                                .has_regular_provider
-                            }
-                          </p>
+                          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Age Group</h3>
+                          <p className="text-zinc-900 dark:text-white">{(selectedItem as SurveyResponse).age_group}</p>
                         </div>
                       </div>
 
@@ -791,27 +617,19 @@ export default function AdminPage() {
                               Access Methods
                             </h4>
                             <p className="text-zinc-900 dark:text-white">
-                              {Array.isArray(
-                                (selectedItem as SurveyResponse).access_methods
-                              )
-                                ? (
-                                    selectedItem as SurveyResponse
-                                  ).access_methods.join(", ")
+                              {Array.isArray((selectedItem as SurveyResponse).access_methods)
+                                ? (selectedItem as SurveyResponse).access_methods.join(", ")
                                 : "N/A"}
                             </p>
                           </div>
 
-                          {(selectedItem as SurveyResponse)
-                            .access_method_other && (
+                          {(selectedItem as SurveyResponse).access_method_other && (
                             <div>
                               <h4 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
                                 Other Access Method
                               </h4>
                               <p className="text-zinc-900 dark:text-white">
-                                {
-                                  (selectedItem as SurveyResponse)
-                                    .access_method_other
-                                }
+                                {(selectedItem as SurveyResponse).access_method_other}
                               </p>
                             </div>
                           )}
@@ -821,24 +639,17 @@ export default function AdminPage() {
                               Faced Difficulties
                             </h4>
                             <p className="text-zinc-900 dark:text-white">
-                              {
-                                (selectedItem as SurveyResponse)
-                                  .access_difficulties
-                              }
+                              {(selectedItem as SurveyResponse).access_difficulties}
                             </p>
                           </div>
 
-                          {(selectedItem as SurveyResponse)
-                            .difficulties_description && (
+                          {(selectedItem as SurveyResponse).difficulties_description && (
                             <div>
                               <h4 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
                                 Difficulties Description
                               </h4>
                               <p className="text-zinc-900 dark:text-white whitespace-pre-wrap">
-                                {
-                                  (selectedItem as SurveyResponse)
-                                    .difficulties_description
-                                }
+                                {(selectedItem as SurveyResponse).difficulties_description}
                               </p>
                             </div>
                           )}
@@ -865,10 +676,7 @@ export default function AdminPage() {
                               Understand Records
                             </h4>
                             <p className="text-zinc-900 dark:text-white">
-                              {
-                                (selectedItem as SurveyResponse)
-                                  .understand_records
-                              }
+                              {(selectedItem as SurveyResponse).understand_records}
                             </p>
                           </div>
                           <div>
@@ -888,9 +696,7 @@ export default function AdminPage() {
                             </p>
                           </div>
                           <div>
-                            <h4 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                              Feel Informed
-                            </h4>
+                            <h4 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Feel Informed</h4>
                             <p className="text-zinc-900 dark:text-white">
                               {(selectedItem as SurveyResponse).feel_informed}
                             </p>
@@ -917,10 +723,7 @@ export default function AdminPage() {
                               Doctor Explained Access
                             </h4>
                             <p className="text-zinc-900 dark:text-white">
-                              {
-                                (selectedItem as SurveyResponse)
-                                  .explained_access
-                              }
+                              {(selectedItem as SurveyResponse).explained_access}
                             </p>
                           </div>
 
@@ -960,23 +763,19 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="p-6 border-t border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex justify-between">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsViewModalOpen(false)}>
+                  <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
                     Close
                   </Button>
-                  {selectedTab === "contact" &&
-                    !(selectedItem as ContactSubmission).responded && (
-                      <Button
-                        onClick={() => {
-                          markAsResponded(
-                            (selectedItem as ContactSubmission).id!
-                          );
-                          setIsViewModalOpen(false);
-                        }}>
-                        Mark as Responded
-                      </Button>
-                    )}
+                  {selectedTab === "contact" && !(selectedItem as ContactSubmission).responded && (
+                    <Button
+                      onClick={() => {
+                        markAsResponded((selectedItem as ContactSubmission).id!)
+                        setIsViewModalOpen(false)
+                      }}
+                    >
+                      Mark as Responded
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -986,5 +785,5 @@ export default function AdminPage() {
 
       <Footer />
     </div>
-  );
+  )
 }

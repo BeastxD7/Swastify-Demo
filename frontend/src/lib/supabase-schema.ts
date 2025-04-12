@@ -23,6 +23,7 @@ export interface ContactSubmission {
 export interface SurveyResponse {
   id?: number
   name: string | null
+  email: string | null
   occupation: string | null
   age_group: string
   has_regular_provider: string
