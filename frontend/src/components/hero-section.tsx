@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HeroSection() {
   const { resolvedTheme } = useTheme();
@@ -102,30 +103,27 @@ export default function HeroSection() {
               className={`text-xl md:text-2xl mb-8 leading-relaxed ${
                 isDark ? "text-gray-300" : "text-zinc-700"
               }`}>
-              Swastify is building a platform to solve real medical problems.
+             Swastify connects patient experiences with innovative solutions. 
               <br />
-              and your story matters. Share what you&apos;ve faced in the
-              healthcare system.
+              Share your healthcare journey to help us build a better system for everyone.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                className={`${
-                  isDark
-                    ? "bg-gradient-to-r from-light-green to-deep-green hover:from-light-green/90 hover:to-deep-green/90 text-zinc-100"
-                    : "bg-gradient-to-r from-deep-green to-deep-green/90 hover:from-deep-green/90 hover:to-deep-green text-white"
-                } font-medium px-6 py-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl relative overflow-hidden group`}
-                onClick={() =>
-                  document
-                    .getElementById("feedback-form")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }>
-                <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
-                <span className="relative flex items-center">
-                  Share Your Experience
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </span>
-              </Button>
+            <Link href="/survey">
+                <Button
+                  className={`${
+                    isDark
+                      ? "bg-gradient-to-r from-light-green to-deep-green hover:from-light-green/90 hover:to-deep-green/90 text-zinc-900"
+                      : "bg-gradient-to-r from-deep-green to-deep-green/90 hover:from-deep-green/90 hover:to-deep-green text-white"
+                  } font-medium px-6 py-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl relative overflow-hidden group`}
+                >
+                  <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
+                  <span className="relative flex text-md font-semibold text-white items-center">
+                    Take a Survey
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </span>
+                </Button>
+              </Link>
 
               <Button
                 variant="outline"
@@ -133,7 +131,7 @@ export default function HeroSection() {
                   isDark
                     ? "border-gray-600 text-gray-300 hover:bg-zinc-800 hover:text-light-green"
                     : "border-gray-300 text-zinc-700 hover:bg-gray-100 hover:text-deep-green"
-                } px-6 py-6 rounded-lg text-lg transition-all duration-300`}>
+                } px-6 py-6 rounded-lg text-md transition-all duration-300`}>
                 Sneak Peek Soon
               </Button>
             </div>
