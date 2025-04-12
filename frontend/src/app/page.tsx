@@ -9,7 +9,6 @@ export default function Home() {
     <main className="min-h-screen bg-[#F8F9FA] dark:bg-[#0A0A0C]">
       <Header />
       <HeroSection />
-      {/* Features component temporarily disabled */}
       <Features />
       <FeedbackForm />
       <Footer />

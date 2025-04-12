@@ -115,7 +115,7 @@ export default function HeroSection() {
                     isDark
                       ? "bg-gradient-to-r from-light-green to-deep-green hover:from-light-green/90 hover:to-deep-green/90 text-zinc-900"
                       : "bg-gradient-to-r from-deep-green to-deep-green/90 hover:from-deep-green/90 hover:to-deep-green text-white"
-                  } font-medium px-6 py-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl relative overflow-hidden group`}
+                  } font-medium px-6 py-6 rounded-lg w-full  shadow-lg transition-all duration-300 hover:shadow-xl relative overflow-hidden group`}
                 >
                   <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
                   <span className="relative flex text-md font-semibold text-white items-center">
