@@ -10,9 +10,9 @@ interface RateLimitRecord {
 
 class RateLimiter {
   private records: Map<string, RateLimitRecord> = new Map()
-  private readonly MAX_ATTEMPTS = 5 // Maximum login attempts
+  private readonly MAX_ATTEMPTS = 2 // Maximum login attempts
   private readonly WINDOW_MS = 15 * 60 * 1000 // 15 minutes window
-  private readonly BLOCK_DURATION_MS = 30 * 60 * 1000 // 30 minutes block
+  private readonly BLOCK_DURATION_MS = 10080 * 60 * 1000 // 60 minutes block
   private cleanupInterval: NodeJS.Timeout | null = null
 
   constructor() {
